@@ -4,18 +4,18 @@ on:
     branches:
       - main
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@main
 
-    - name: Build and Deploy
-      uses: JamesIves/github-pages-deploy-action@v4
-      env:
-        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-        BRANCH: gh-pages
-        FOLDER: build
-        BUILD_SCRIPT: npm install && npm run build
-      with:
-       folder: build
+    - name: Build
+      uses: actions/setup-node@v1
+      with: 
+        node-version: '14'
+      
+    - name: npm install and build
+      run: |
+              npm install
+              npm run build
