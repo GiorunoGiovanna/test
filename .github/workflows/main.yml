@@ -22,6 +22,6 @@ jobs:
     - name: Deploy to gh-pages
       uses: peaceiris/actions-gh-pages@v3
       with:
-        ssh-key: ${{ secrets.ACCESS_TOKEN }}
+        deploy_key: ${{ secrets.ACCESS_TOKEN }}
         publish_dir: ./dist
         
