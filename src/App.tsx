@@ -26,7 +26,7 @@ function App() {
         </p>
       </div>
       <p className="read-the-docs">
-        我是测试
+        我是测试1
       </p>
     </>
   )
