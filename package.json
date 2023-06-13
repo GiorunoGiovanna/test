@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://giorunogiovanna.github.io/github-actions-demo",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -26,6 +27,5 @@
     "gh-pages": "^5.0.0",
     "typescript": "^5.0.2",
     "vite": "^4.3.9"
-  },
-  "homepage": "https://giorunogiovanna.github.io/github-actions-demo"
+  }
 }
