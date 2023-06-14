@@ -1,15 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="https://giorunogiovanna.github.io/test/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + Vue + TS</title>
-    <script type="module" crossorigin src="https://giorunogiovanna.github.io/test/assets/index-4ff4325d.js"></script>
-    <link rel="stylesheet" href="https://giorunogiovanna.github.io/test/assets/index-c322ae43.css">
-  </head>
-  <body>
-    <div id="app"></div>
-    
-  </body>
-</html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贪吃蛇</title>
+</head>
+
+<body>
+    <div class="main">
+        <div class="buttons">
+            <button id="start" onclick="init()">开始游戏</button>
+            <button id="pause" onclick="pause()">暂停游戏</button>
+            <button id="continue" onclick="continueGame()">继续游戏</button>
+            <button id="end" onclick="end()">结束游戏</button>
+            <div>
+                <span>分数：</span>
+                <span id="score">0</span>
+            </div>
+        </div>
+        <div class="map">
+            <canvas id="canvas"></canvas>
+        </div>
+    </div>
+</body>
+
+<script>
+    // 蛇每个方块的大小
+    let snakeWidth = 10
+    // 初始蛇长度
+    let initSnakeWidth = 3
+    // 初始蛇位置
+    let initSnakePosition
+    // snakeDirection 蛇的方向
+    // 0: 上
+    // 1: 右
+    // 2: 下
+    // 3: 左
+    let snakeDirection = 2
+    // 蛇的移动速度 步/秒
+    let snakeSpeed = 300
+
+    // 食物位置
+    let foodPosition
+
+    // 暂停机制
+    let timer
+
+    // 初始盒子大小
+    let initBoxSize = 300
+    // 获取盒子
+    let box = document.querySelector('#canvas')
+    // 设置盒子大小
+    box.width = initBoxSize
+    box.height = initBoxSize
+    // 获取画笔
+    let ctx = box.getContext('2d')
+    // 设置画笔颜色
+    ctx.fillStyle = 'black'
+    // 设置画笔宽度
+    ctx.lineWidth = 5
+
+    // 获取分数
+    let score = document.querySelector('#score')
+
+    // 开始游戏
+    function init() {
+        initSnakePosition = [
+            [0, 2], // 蛇头
+            [0, 1],
+            [0, 0], // 蛇尾
+        ]
+        // 清空画布
+        ctx.clearRect(0, 0, initBoxSize, initBoxSize)
+        // 初始化蛇的位置
+        for (item of initSnakePosition) {
+            ctx.fillRect(item[0] * snakeWidth, item[1] * snakeWidth, snakeWidth - 1, snakeWidth - 1)
+        }
+        // 监听键盘事件
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowUp' && snakeDirection !== 2) {
+                snakeDirection = 0
+            } else if (e.key === 'ArrowRight' && snakeDirection !== 3) {
+                snakeDirection = 1
+            } else if (e.key === 'ArrowDown' && snakeDirection !== 0) {
+                snakeDirection = 2
+            } else if (e.key === 'ArrowLeft' && snakeDirection !== 1) {
+                snakeDirection = 3
+            }
+        })
+        move()
+        setFood()
+    }
+
+    // 主动结束游戏
+    function end() {
+        clearInterval(timer)
+        ctx.clearRect(0, 0, initBoxSize, initBoxSize)
+    }
+
+    // 控制蛇的移动（如果不输入，则沿着当前方向移动）
+    function move() {
+        timer = setInterval(() => {
+            let nextPosition
+            if (snakeDirection === 0) {
+                nextPosition = [initSnakePosition[0][0], initSnakePosition[0][1] - 1]
+            } else if (snakeDirection === 1) {
+                nextPosition = [initSnakePosition[0][0] + 1, initSnakePosition[0][1]]
+            } else if (snakeDirection === 2) {
+                nextPosition = [initSnakePosition[0][0], initSnakePosition[0][1] + 1]
+            } else if (snakeDirection === 3) {
+                nextPosition = [initSnakePosition[0][0] - 1, initSnakePosition[0][1]]
+            }
+            initSnakePosition.unshift(nextPosition)
+            if (nextPosition[0] == foodPosition[0] && nextPosition[1] == foodPosition[1]) {
+                score.innerText = parseInt(score.innerText) + 1
+                setFood()
+            } else {
+                // 清除initSnakePosition最后一个元素
+                ctx.clearRect(initSnakePosition[initSnakePosition.length - 1][0] * snakeWidth, initSnakePosition[initSnakePosition.length - 1][1] * snakeWidth, snakeWidth - 1, snakeWidth - 1)
+                initSnakePosition.pop()
+            }
+            // 如果蛇吃到自己或者撞到边界，则游戏结束
+            gameOver(timer)
+            for (item of initSnakePosition) {
+                ctx.fillRect(item[0] * snakeWidth, item[1] * snakeWidth, snakeWidth - 1, snakeWidth - 1)
+            }
+        }, snakeSpeed)
+    }
+
+    // 暂停游戏
+    function pause() {
+        clearInterval(timer)
+    }
+
+    // 继续游戏
+    function continueGame() {
+        move()
+    }
+
+    // 设置食物
+    function setFood() {
+        foodPosition = [Math.floor(Math.random() * initBoxSize / snakeWidth), Math.floor(Math.random() * initBoxSize / snakeWidth)]
+        ctx.fillRect(foodPosition[0] * snakeWidth, foodPosition[1] * snakeWidth, snakeWidth - 1, snakeWidth - 1)
+    }
+
+    // 游戏结束机制（蛇撞到自己，蛇撞到边界）
+    function gameOver(timer) {
+        if (initSnakePosition[0][0] < 0 || initSnakePosition[0][0] > initBoxSize / snakeWidth - 1 || initSnakePosition[0][1] < 0 || initSnakePosition[0][1] > initBoxSize / snakeWidth - 1) {
+            alert('游戏结束')
+            clearInterval(timer)
+        }
+        for (let i = 1; i < initSnakePosition.length; i++) {
+            if (initSnakePosition[0][0] == initSnakePosition[i][0] && initSnakePosition[0][1] == initSnakePosition[i][1]) {
+                alert('游戏结束')
+                clearInterval(timer)
+            }
+        }
+    }
+</script>
+
+<style>
+    .main {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .buttons {
+        width: 100%;
+        height: 100px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    #canvas {
+        border: 1px solid #000;
+    }
+
+    /* .map {
+        width: 600px;
+        height: 600px;
+        border: 1px solid #000;
+        position: relative;
+    } */
+</style>
